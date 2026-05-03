@@ -5,6 +5,12 @@
 package com.mycompany.servicio_autenticacion;
 
 import com.rabbitmq.client.*;
+import com.sistema.permisos.grpc.IngresoRequest;
+import com.sistema.permisos.grpc.NotificacionPermisosServiceGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import java.time.LocalDateTime;
+import utils.Configuracion;
 
 /**
  *
@@ -15,6 +21,12 @@ public class MensajeHuellaConsumer {
     private static final String RABBITMQ_HOST = "localhost";
     private static final String QUEUE_NAME = "mqtt-subscription-huella.capturada-qos1";
     private final BDAutenticacion verificador = new BDAutenticacion();
+    private final ManagedChannel channelGrpc = ManagedChannelBuilder.forAddress
+        (Configuracion.get("permisos.host"), Configuracion.getInt("permisos.port"))
+        .usePlaintext() // Sin cifrado para pruebas locales
+        .build();
+    private final NotificacionPermisosServiceGrpc.NotificacionPermisosServiceBlockingStub permisosStub 
+        = NotificacionPermisosServiceGrpc.newBlockingStub(channelGrpc);
 
     public void iniciar() throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -45,6 +57,8 @@ public class MensajeHuellaConsumer {
 
                 if (autenticado) {
                     System.out.println("Acceso AUTORIZADO para médico: " + mensaje.getIdMedico());
+                    enviarMensajeAutenticacion(mensaje.getCedulaProfesional());
+
                 } else {
                     System.out.println("Acceso DENEGADO para médico: " + mensaje.getIdMedico());
                 }
@@ -71,5 +85,14 @@ public class MensajeHuellaConsumer {
         int inicio = json.indexOf(buscar) + buscar.length();
         int fin = json.indexOf("\"", inicio);
         return json.substring(inicio, fin);
+    }
+
+    private void enviarMensajeAutenticacion(String cedulaProfesional) {
+        IngresoRequest ingreso = IngresoRequest.newBuilder()
+                .setCedulaProfesional(cedulaProfesional)
+                .setTimestamp(LocalDateTime.now().toString())
+                .build();
+
+        permisosStub.notificarIngresoUsuario(ingreso);
     }
 }

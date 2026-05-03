@@ -13,17 +13,22 @@ import io.grpc.stub.StreamObserver;
  *
  * @author Ramon Valencia
  */
-public class ManejadorMensajes extends NotificacionPermisosServiceImplBase{
-    
+public class ManejadorMensajes extends NotificacionPermisosServiceImplBase {
+
+    private BDPermisos permisos = new BDPermisos();
+
     @Override
     public void notificarIngresoUsuario(IngresoRequest request, StreamObserver<IngresoResponse> responseObserver) {
         // Aquí va tu lógica: ¿Qué haces cuando alguien entra?
-        System.out.println("Me avisaron que entró: " + request.getUsuarioId());
-
+        String cedulaProfesional = request.getCedulaProfesional();
+        if (permisos.verificarPermisosMedico(cedulaProfesional)) {
+            System.out.println("Me avisaron que entró: " + cedulaProfesional);
+            System.out.println("Nivel de permisos al que tiene acceso: " + permisos.getPermisoMedico(cedulaProfesional).toString());
+        }
         // Respondes al servicio de Autenticación
         IngresoResponse resp = IngresoResponse.newBuilder()
-            .setMensaje("Recibido, permisos actualizados para " + request.getUsuarioId())
-            .build();
+                .setMensaje("Recibido, permisos actualizados para " + request.getCedulaProfesional())
+                .build();
         responseObserver.onNext(resp);
         responseObserver.onCompleted();
     }

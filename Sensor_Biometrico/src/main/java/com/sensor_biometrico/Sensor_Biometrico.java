@@ -15,9 +15,9 @@ public class Sensor_Biometrico {
         System.out.println("Simulando que el médico puso su huella...");
 
         MensajeHuella mensaje = new MensajeHuella(
-            "MED-001",          
-            "12345678",          
-            "Huella-Simulada-001",  
+            "MED-002",          
+            "87654321",          
+            "Huella-Simulada-002",  
             "PAC-007"            
         );
 

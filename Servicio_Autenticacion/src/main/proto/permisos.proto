@@ -12,7 +12,7 @@ service NotificacionPermisosService {
 
 // Lo que Autenticación le envía a Permisos
 message IngresoRequest {
-  string usuario_id = 1;
+  string cedula_profesional = 1;
   string timestamp = 2; // Opcional: para saber a qué hora entró
 }
 
