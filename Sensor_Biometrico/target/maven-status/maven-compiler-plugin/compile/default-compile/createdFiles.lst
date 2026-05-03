@@ -1,0 +1,3 @@
+com\sensor_biometrico\Sensor_Biometrico.class
+com\sensor_biometrico\MensajeHuella.class
+com\sensor_biometrico\MQTTPublisher.class
