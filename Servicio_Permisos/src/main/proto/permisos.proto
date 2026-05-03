@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_package = "com.sistema.permisos.grpc";
+option java_multiple_files = true;
+
+// El servicio que "escucha" las notificaciones
+service NotificacionPermisosService {
+  // Autenticación avisa que alguien entró. 
+  // Se usa "Empty" o un mensaje de confirmación simple como respuesta.
+  rpc notificarIngresoUsuario (IngresoRequest) returns (IngresoResponse);
+}
+
+// Lo que Autenticación le envía a Permisos
+message IngresoRequest {
+  string usuario_id = 1;
+  string timestamp = 2; // Opcional: para saber a qué hora entró
+}
+
+// Una respuesta simple para que Autenticación sepa que el mensaje llegó
+message IngresoResponse {
+  bool recibido = 1;
+  string mensaje = 2; // Ejemplo: "Procesando permisos para usuario X"
+}
