@@ -16,7 +16,8 @@ import io.grpc.stub.StreamObserver;
 public class ManejadorMensajes extends NotificacionPermisosServiceImplBase {
 
     private BDPermisos permisos = new BDPermisos();
-
+    private EnvioPermisosService envio = new EnvioPermisosService();
+    
     @Override
     public void notificarIngresoUsuario(IngresoRequest request, StreamObserver<IngresoResponse> responseObserver) {
         // Aquí va tu lógica: ¿Qué haces cuando alguien entra?
@@ -24,6 +25,7 @@ public class ManejadorMensajes extends NotificacionPermisosServiceImplBase {
         if (permisos.verificarPermisosMedico(cedulaProfesional)) {
             System.out.println("Me avisaron que entró: " + cedulaProfesional);
             System.out.println("Nivel de permisos al que tiene acceso: " + permisos.getPermisoMedico(cedulaProfesional).toString());
+            envio.enviarDatosAcceso(cedulaProfesional, 1, "EXP-001");
         }
         // Respondes al servicio de Autenticación
         IngresoResponse resp = IngresoResponse.newBuilder()

@@ -15,11 +15,19 @@ import java.util.Map;
 public class BDPermisos {
     
     private static final Map<String, TipoPermiso> permisosBD = new HashMap<>();
+    //Este mapa hace referencia a los documentos a los que tiene acceso el medico
+    private static final Map<String, String> documentos = new HashMap<>();
     
     static {
         permisosBD.put("12345678", TipoPermiso.EDITAR);
         permisosBD.put("87654321", TipoPermiso.LEER);
         permisosBD.put("13572468", TipoPermiso.NINGUNO);
+    }
+    
+    static {
+        documentos.put("12345678", "12345");
+        documentos.put("87654321", "67890");
+        documentos.put("13572468", "13579");
     }
     
     public boolean verificarPermisosMedico(String cedulaProfesional) {
@@ -43,5 +51,7 @@ public class BDPermisos {
         return permisosBD.get(cedulaProfesional);
     }
     
-    
+    public String getDocumentoAcceso(String cedulaProfesional) {
+        return documentos.get(cedulaProfesional);
+    }
 }
