@@ -19,10 +19,10 @@ import utils.Configuracion;
 public class EnvioPermisosService {
     private final ManagedChannel channelGrpc = ManagedChannelBuilder.forAddress
         (Configuracion.get("host"), 9091)
-        .usePlaintext() // Sin cifrado para pruebas locales
+        .usePlaintext()
         .build();
 
-    private final NotificacionAccesoServiceGrpc.NotificacionAccesoServiceBlockingStub permisosStub 
+    private final NotificacionAccesoServiceGrpc.NotificacionAccesoServiceBlockingStub expedientesStub 
         = NotificacionAccesoServiceGrpc.newBlockingStub(channelGrpc);
 
     /**
@@ -39,9 +39,9 @@ public class EnvioPermisosService {
                     .setNivelPermiso(nivel)
                     .setDocumentoAcceso(documento)
                     .build();
-
+ 
             // Llamada síncrona/bloqueante
-            AccesoMedicoResponse response = permisosStub.registrarAccesoMedico(request);
+            AccesoMedicoResponse response = expedientesStub.registrarAccesoMedico(request);
 
             if (response.getRecibidoConExito()) {
                 System.out.println("Éxito: " + response.getMensaje());
@@ -51,7 +51,6 @@ public class EnvioPermisosService {
 
         } catch (Exception e) {
             System.err.println("Error de comunicación gRPC: " + e.getMessage());
-            // Aquí podrías implementar una lógica de reintento si eres "más fuerte"
         }
     }
 

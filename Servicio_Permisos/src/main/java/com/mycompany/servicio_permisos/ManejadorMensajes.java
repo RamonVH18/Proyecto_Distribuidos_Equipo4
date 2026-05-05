@@ -25,6 +25,7 @@ public class ManejadorMensajes extends NotificacionPermisosServiceImplBase {
         if (permisos.verificarPermisosMedico(cedulaProfesional)) {
             System.out.println("Me avisaron que entró: " + cedulaProfesional);
             System.out.println("Nivel de permisos al que tiene acceso: " + permisos.getPermisoMedico(cedulaProfesional).toString());
+            //Esto esta harcodeado
             envio.enviarDatosAcceso(cedulaProfesional, 1, "EXP-001");
         }
         // Respondes al servicio de Autenticación

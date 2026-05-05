@@ -20,8 +20,7 @@ public class NotificationAccesoServiceImpl extends NotificacionAccesoServiceImpl
     private final ConcurrentHashMap<String, Integer> medicosActivos = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> documentos = new ConcurrentHashMap<>();
     
-    @Override
-    public AccesoMedicoResponse registrarAccesoMedico(AccesoMedicoRequest request) {
+    public Uni<AccesoMedicoResponse> registrarAccesoMedico(AccesoMedicoRequest request) {
         // Guardamos la cédula y el nivel que vienen de Permisos
         medicosActivos.put(request.getCedulaProfesional(), request.getNivelPermiso());
         documentos.put(request.getDocumentoAcceso(), request.getCedulaProfesional());
