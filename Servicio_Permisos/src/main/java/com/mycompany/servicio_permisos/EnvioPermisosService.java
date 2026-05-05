@@ -31,7 +31,7 @@ public class EnvioPermisosService {
      * @param nivel El nivel de permiso (1, 2, 3...).
      * @param documento
      */
-    public void enviarDatosAcceso(String cedula, int nivel, String documento) {
+    public void enviarDatosAcceso(String cedula, String nivel, String documento) {
         try {
             // Construimos el mensaje basado en el .proto
             AccesoMedicoRequest request = AccesoMedicoRequest.newBuilder()

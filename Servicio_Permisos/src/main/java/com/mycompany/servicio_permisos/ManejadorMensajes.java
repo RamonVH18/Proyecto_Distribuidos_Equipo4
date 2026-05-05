@@ -23,10 +23,11 @@ public class ManejadorMensajes extends NotificacionPermisosServiceImplBase {
         // Aquí va tu lógica: ¿Qué haces cuando alguien entra?
         String cedulaProfesional = request.getCedulaProfesional();
         if (permisos.verificarPermisosMedico(cedulaProfesional)) {
+            String permiso = permisos.getPermisoMedico(cedulaProfesional).toString();
             System.out.println("Me avisaron que entró: " + cedulaProfesional);
-            System.out.println("Nivel de permisos al que tiene acceso: " + permisos.getPermisoMedico(cedulaProfesional).toString());
+            System.out.println("Nivel de permisos al que tiene acceso: " + permiso);
             //Esto esta harcodeado
-            envio.enviarDatosAcceso(cedulaProfesional, 1, "EXP-001");
+            envio.enviarDatosAcceso(cedulaProfesional, permiso, "EXP-001");
         }
         // Respondes al servicio de Autenticación
         IngresoResponse resp = IngresoResponse.newBuilder()
