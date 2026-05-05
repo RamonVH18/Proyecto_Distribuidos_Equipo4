@@ -18,7 +18,7 @@ import utils.Configuracion;
 
 public class EnvioPermisosService {
     private final ManagedChannel channelGrpc = ManagedChannelBuilder.forAddress
-        (Configuracion.get("host"), 9091)
+        (Configuracion.get("expedientes.host"), Configuracion.getInt("expedientes.port"))
         .usePlaintext()
         .build();
 

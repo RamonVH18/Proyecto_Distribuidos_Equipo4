@@ -17,8 +17,6 @@ public class BDExpediente {
     private final Map<String, Expediente> baseDeDatos = new HashMap<>();
 
     public BDExpediente() {
-        // Llenamos el mapa con algunos datos de prueba
-        // Nota: Las cédulas aquí deberían coincidir con las que mandes desde Permisos para probar
         baseDeDatos.put("EXP-001", new Expediente(1L, "12345678", "Juan Perez", "Gripe común"));
         baseDeDatos.put("EXP-002", new Expediente(2L, "87654321", "Maria Lopez", "Fractura de fémur"));
         baseDeDatos.put("EXP-003", new Expediente(3L, "12345678", "Carlos Ruiz", "Hipertensión arterial"));

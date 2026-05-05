@@ -7,6 +7,7 @@ package com.mycompany.servicio_expendientes;
 import com.sistema.expedientes.grpc.AccesoMedicoRequest;
 import com.sistema.expedientes.grpc.AccesoMedicoResponse;
 import com.sistema.expedientes.grpc.NotificacionAccesoServiceGrpc.NotificacionAccesoServiceImplBase;
+import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,28 +17,33 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Ramon Valencia
  */
 @GrpcService
-public class NotificationAccesoServiceImpl extends NotificacionAccesoServiceImplBase{
+public class NotificationAccesoServiceImpl extends NotificacionAccesoServiceImplBase {
+
     private final ConcurrentHashMap<String, Integer> medicosActivos = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> documentos = new ConcurrentHashMap<>();
-    
-    public Uni<AccesoMedicoResponse> registrarAccesoMedico(AccesoMedicoRequest request) {
+
+    @Override
+    public void registrarAccesoMedico(AccesoMedicoRequest request, StreamObserver<AccesoMedicoResponse> responseObserver) {
         // Guardamos la cédula y el nivel que vienen de Permisos
         medicosActivos.put(request.getCedulaProfesional(), request.getNivelPermiso());
         documentos.put(request.getDocumentoAcceso(), request.getCedulaProfesional());
-        System.out.println("Acceso registrado: Méd. " + request.getCedulaProfesional() + 
-                           " con nivel " + request.getNivelPermiso());
+        System.out.println("Acceso registrado: Méd. " + request.getCedulaProfesional()
+                + " con nivel " + request.getNivelPermiso());
 
-        return Uni.createFrom().item(AccesoMedicoResponse.newBuilder()
-                .setRecibidoConExito(true)
-                .setMensaje("Ficha de acceso sincronizada")
-                .build());
+        AccesoMedicoResponse response = AccesoMedicoResponse.newBuilder()
+            .setRecibidoConExito(true)
+            .setMensaje("Ficha de acceso sincronizada")
+            .build();
+        
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
     // Método para que tus otros servicios de Expedientes verifiquen permisos
     public Integer obtenerNivel(String cedula) {
         return medicosActivos.getOrDefault(cedula, 0); // 0 = Sin acceso
     }
-    
+
     public Boolean consultarAccesoMedico(String cedula, String documento) {
         return documentos.get(cedula).equals(documento);
     }
