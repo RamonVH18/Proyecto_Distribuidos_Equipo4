@@ -25,7 +25,8 @@ public class Servicio_Permisos {
                 .build();
         try {
             server.start();
-            System.out.println("Servidor de Permisos iniciando en el puerto " + port);
+            System.out.println("-- Servicio de Permisos iniciado --- " + port);
+            System.out.println("Servicio escuchando...");
             server.awaitTermination();
         } catch (IOException ex) {
             System.getLogger(NotificacionPermisosServiceGrpc.class.getName())

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "com.autenticacion.grpc";
+
+service AutenticacionService {
+  rpc VerificarMedico (SolicitudVerificacion) returns (RespuestaVerificacion);
+}
+
+message SolicitudVerificacion {
+  string medico_id = 1;
+}
+
+message RespuestaVerificacion {
+  bool autenticado = 1;
+  string paciente_id = 2;
+}

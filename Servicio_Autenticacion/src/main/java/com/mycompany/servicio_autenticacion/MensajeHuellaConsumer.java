@@ -4,6 +4,7 @@
  */
 package com.mycompany.servicio_autenticacion;
 
+import BD.BDAutenticacion;
 import com.rabbitmq.client.*;
 import com.sistema.permisos.grpc.IngresoRequest;
 import com.sistema.permisos.grpc.NotificacionPermisosServiceGrpc;
@@ -44,7 +45,7 @@ public class MensajeHuellaConsumer {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try {
                 String json = new String(delivery.getBody(), "UTF-8");
-                System.out.println("Mensaje recibido: " + json);
+                System.out.println("Mensaje de autenticación recibido: " + json);
 
                 MensajeHuella mensaje = toJson(json);
 

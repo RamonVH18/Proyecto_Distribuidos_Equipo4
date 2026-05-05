@@ -4,6 +4,7 @@
  */
 package com.mycompany.servicio_permisos;
 
+import BD.BDPermisos;
 import com.sistema.permisos.grpc.IngresoRequest;
 import com.sistema.permisos.grpc.IngresoResponse;
 import com.sistema.permisos.grpc.NotificacionPermisosServiceGrpc.NotificacionPermisosServiceImplBase;

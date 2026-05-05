@@ -5,7 +5,6 @@
 package com.mycompany.servicio_expendientes;
 
 import BD.BDExpediente;
-import BD.Expediente;
 import io.quarkus.grpc.GrpcService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
