@@ -14,8 +14,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 public class MQTTPublisher {
 
-    private static final String BROKER_URL = "tcp://localhost:1883";
-    private static final String TOPIC = "huella.capturada";
+    private static final String BROKER_URL = "tcp://broker-rabbitmq:1883";
+    private static final String TOPIC = "huella.capturada"; 
     private static final String CLIENT_ID = "sensor-biometrico-01";
 
     public void publicarHuella(MensajeHuella mensaje) {

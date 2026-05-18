@@ -19,7 +19,7 @@ import utils.Configuracion;
  */
 public class MensajeHuellaConsumer {
 
-    private static final String RABBITMQ_HOST = "localhost";
+    private static final String RABBITMQ_HOST = "broker-rabbitmq";
     private static final String QUEUE_NAME = "mqtt-subscription-huella.capturada-qos1";
     private final BDAutenticacion verificador = new BDAutenticacion();
     private final ManagedChannel channelGrpc = ManagedChannelBuilder.forAddress

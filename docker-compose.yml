@@ -1,0 +1,79 @@
+services:
+  # ----------------------------------------------------
+  # Servidor de Mensajería Central (Híbrido AMQP/MQTT)
+  # ----------------------------------------------------
+  broker-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: broker-rabbitmq
+    ports:
+      - "1883:1883"   # MQTT
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Web Admin
+    command: bash -c "rabbitmq-plugins enable --offline rabbitmq_mqtt && rabbitmq-server"
+    networks:
+      - red-distribuidos
+    # Docker monitoreará internamente cuándo RabbitMQ responde con éxito
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------
+  # 4. Servicio de Expedientes (Quarkus)
+  # ----------------------------------------------------
+  servicio-expedientes:
+    build: ./Servicio_Expendientes
+    container_name: servicio-expedientes
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    depends_on:
+      broker-rabbitmq:
+        condition: service_healthy # Espera a que el broker esté LISTO, no solo iniciado
+    networks:
+      - red-distribuidos
+
+  # ----------------------------------------------------
+  # 3. Servicio de Permisos
+  # ----------------------------------------------------
+  servicio-permisos:
+    build: ./Servicio_Permisos
+    container_name: servicio-permisos
+    ports:
+      - "9090:9090"
+    depends_on:
+      servicio-expedientes:
+        condition: service_started
+    networks:
+      - red-distribuidos
+
+  # ----------------------------------------------------
+  # 2. Servicio de Autenticación
+  # ----------------------------------------------------
+  servicio-autenticacion:
+    build: ./Servicio_Autenticacion
+    container_name: servicio-autenticacion
+    depends_on:
+      broker-rabbitmq:
+        condition: service_healthy # Espera a que el broker esté LISTO
+      servicio-permisos:
+        condition: service_started
+    networks:
+      - red-distribuidos
+
+  # ----------------------------------------------------
+  # 1. Sensor Biométrico (Emulador)
+  # ----------------------------------------------------
+  sensor-biometrico:
+    build: ./Sensor_Biometrico
+    container_name: sensor-biometrico
+    depends_on:
+      broker-rabbitmq:
+        condition: service_healthy # Espera a que el broker esté LISTO
+    networks:
+      - red-distribuidos
+
+networks:
+  red-distribuidos:
+    driver: bridge
