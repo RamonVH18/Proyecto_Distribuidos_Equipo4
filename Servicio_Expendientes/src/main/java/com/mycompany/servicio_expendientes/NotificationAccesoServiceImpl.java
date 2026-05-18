@@ -11,6 +11,7 @@ import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcService;
 import jakarta.inject.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
+import jwt.ValidadorJwt;
 
 /**
  *
@@ -20,43 +21,33 @@ import java.util.concurrent.ConcurrentHashMap;
 @Singleton
 public class NotificationAccesoServiceImpl extends NotificacionAccesoServiceImplBase {
 
-    private final ConcurrentHashMap<String, String> medicosActivos = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, String> documentos = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> tokens = new ConcurrentHashMap<>();
 
     @Override
-    public void registrarAccesoMedico(AccesoMedicoRequest request, StreamObserver<AccesoMedicoResponse> responseObserver) {
-        // Guardamos la cédula y el nivel que vienen de Permisos
-        medicosActivos.put(request.getCedulaProfesional(), request.getNivelPermiso());
-        documentos.put(request.getDocumentoAcceso(), request.getCedulaProfesional());
-        System.out.println("Acceso registrado: Méd. " + request.getCedulaProfesional()
-                + " con nivel " + request.getNivelPermiso());
+    public void registrarAccesoMedico(AccesoMedicoRequest request,
+            StreamObserver<AccesoMedicoResponse> responseObserver) {
+
+        tokens.put(request.getDocumentoAcceso(), request.getToken());
+        System.out.println("Token registrado para documento: " + request.getDocumentoAcceso());
 
         AccesoMedicoResponse response = AccesoMedicoResponse.newBuilder()
                 .setRecibidoConExito(true)
-                .setMensaje("Ficha de acceso sincronizada")
+                .setMensaje("Token de acceso registrado")
                 .build();
-
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
-    // Método para que tus otros servicios de Expedientes verifiquen permisos
-    public String obtenerNivel(String cedula) {
-        return medicosActivos.getOrDefault(cedula, "NINGUNO"); // 0 = Sin acceso
-    }
-
     public Boolean consultarAccesoMedico(String cedula, String documento) {
-        // Obtenemos quién tiene permiso para este documento
-        String cedulaAutorizada = documentos.get(documento);
+        String token = tokens.get(documento);
 
-        // Log para depurar (verás esto en la consola de Quarkus)
-        System.out.println("MAPA: " + documentos);
-        System.out.println("Verificando Documento: " + documento
-                + " | Cédula que intenta: " + cedula
-                + " | Cédula autorizada en mapa: " + cedulaAutorizada);
+        if (token == null) {
+            System.out.println("No hay token para documento: " + documento);
+            return false;
+        }
 
-        // Evitamos el NPE usando Objects.equals
-        // Si cedulaAutorizada es null, simplemente devuelve false en lugar de tronar
-        return java.util.Objects.equals(cedulaAutorizada, cedula);
+        boolean valido = ValidadorJwt.validarToken(token, cedula, documento);
+        System.out.println("Token válido: " + valido + " para médico: " + cedula);
+        return valido;
     }
 }

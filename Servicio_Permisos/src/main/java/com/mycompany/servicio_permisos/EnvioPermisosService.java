@@ -15,31 +15,34 @@ import utils.Configuracion;
  *
  * @author Ramon Valencia
  */
-
 public class EnvioPermisosService {
+
     private final ManagedChannel channelGrpc = ManagedChannelBuilder.forAddress
         (Configuracion.get("expedientes.host"), Configuracion.getInt("expedientes.port"))
-        .usePlaintext()
-        .build();
+            .usePlaintext()
+            .build();
 
-    private final NotificacionAccesoServiceGrpc.NotificacionAccesoServiceBlockingStub expedientesStub 
-        = NotificacionAccesoServiceGrpc.newBlockingStub(channelGrpc);
+    private final NotificacionAccesoServiceGrpc.NotificacionAccesoServiceBlockingStub expedientesStub
+            = NotificacionAccesoServiceGrpc.newBlockingStub(channelGrpc);
 
     /**
      * Envía la información del médico al Servicio de Expedientes.
+     *
      * @param cedula La cédula profesional del médico.
      * @param nivel El nivel de permiso (1, 2, 3...).
-     * @param documento
+     * @param documento documento.
+     * @param token token.
      */
-    public void enviarDatosAcceso(String cedula, String nivel, String documento) {
+    public void enviarDatosAcceso(String cedula, String nivel, String documento, String token) {
         try {
             // Construimos el mensaje basado en el .proto
             AccesoMedicoRequest request = AccesoMedicoRequest.newBuilder()
                     .setCedulaProfesional(cedula)
                     .setNivelPermiso(nivel)
                     .setDocumentoAcceso(documento)
+                    .setToken(token) 
                     .build();
- 
+
             // Llamada síncrona/bloqueante
             AccesoMedicoResponse response = expedientesStub.registrarAccesoMedico(request);
 

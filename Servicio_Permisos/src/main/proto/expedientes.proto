@@ -15,6 +15,7 @@ message AccesoMedicoRequest {
   string cedula_profesional = 1;
   string documento_acceso = 2;
   string nivel_permiso = 3; // Ejemplo: 1=Lectura, 2=Escritura, 3=Admin
+  string token = 4;
 }
 
 message AccesoMedicoResponse {
