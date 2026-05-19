@@ -1,71 +1,54 @@
 services:
-  # ----------------------------------------------------
-  # Servidor de Mensajería Central (Híbrido AMQP/MQTT)
-  # ----------------------------------------------------
   broker-rabbitmq:
     image: rabbitmq:3-management
     container_name: broker-rabbitmq
     ports:
-      - "11883:1883"   # Evita colisión de MQTT local
-      - "5673:5672"    # Evita colisión de AMQP local
-      - "15672:15672"  # Panel de administración web
-    command: bash -c "rabbitmq-plugins enable --offline rabbitmq_mqtt && rabbitmq-server"
+      - "11883:1883" 
+      - "5673:5672"
+      - "15672:15672"
+    command: >
+      bash -c "rabbitmq-plugins enable rabbitmq_mqtt && 
+               rabbitmq-plugins enable rabbitmq_management && 
+               rabbitmq-server"
     networks:
       - red-distribuidos
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_running"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  # ----------------------------------------------------
-# 4. Servicio de Expedientes (Quarkus) - INSTANCIA 1
-# ----------------------------------------------------
-servicio-expedientes-1:
-  build: ./Servicio_Expendientes
-  container_name: servicio-expedientes-1
-  ports:
-    - "8081:8081" # Mapea el puerto 8081 del contenedor al 8081 de tu PC
-  depends_on:
-    broker-rabbitmq:
-      condition: service_healthy
-  networks:
-    - red-distribuidos
+  servicio-expedientes:
+    build: ./Servicio_Expendientes
+    container_name: servicio-expedientes
+    environment:
+      - QUARKUS_HTTP_PORT=8081
+    networks:
+      - red-distribuidos
 
-# ----------------------------------------------------
-# 4.5. Servicio de Expedientes (Quarkus) - INSTANCIA 2
-# ----------------------------------------------------
-servicio-expedientes-2:
-  build: ./Servicio_Expendientes # Usa la misma carpeta y el mismo Dockerfile
-  container_name: servicio-expedientes-2
-  ports:
-    - "8082:8082" # Mapea el puerto 8082 del contenedor al 8082 de tu PC
-  environment:
-    - QUARKUS_HTTP_PORT=8082 # ¡AQUÍ ESTÁ EL TRUCO! Sobrescribe el puerto del Dockerfile al vuelo
-  depends_on:
-    broker-rabbitmq:
-      condition: service_healthy
-  networks:
-    - red-distribuidos
+  proxy:
+    image: nginx:alpine
+    container_name: balanceador-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - servicio-expedientes
+    networks:
+      - red-distribuidos
 
-  # ----------------------------------------------------
-  # 3. Servicio de Permisos
-  # ----------------------------------------------------
   servicio-permisos:
     build: ./Servicio_Permisos
     container_name: servicio-permisos
     ports:
-      - "9090:9090" # Puerto gRPC
-      - "8080:8080" # Servidor WebSocket
+      - "9090:9090"
+      - "8080:8080"
     depends_on:
-      servicio-expedientes:
-        condition: service_started
+      - servicio-expedientes
     networks:
       - red-distribuidos
 
-  # ----------------------------------------------------
-  # 2. Servicio de Autenticación
-  # ----------------------------------------------------
   servicio-autenticacion:
     build: ./Servicio_Autenticacion
     container_name: servicio-autenticacion
@@ -77,14 +60,11 @@ servicio-expedientes-2:
     networks:
       - red-distribuidos
 
-  # ----------------------------------------------------
-  # 1. Sensor Biométrico (Emulador con Retraso Automático)
-  # ----------------------------------------------------
   sensor-biometrico:
     build: ./Sensor_Biometrico
     container_name: sensor-biometrico
-    # AUTOMATIZACIÓN: Espera 10 segundos a que la Autenticación esté 100% lista en la red antes de mandar la huella
-    entrypoint: bash -c "sleep 10 && java -cp app.jar:lib/* com.sensor_biometrico.Sensor_Biometrico"
+    # Esperamos a que los servidores estén listos
+    entrypoint: bash -c "sleep 15 && java -cp app.jar:lib/* com.sensor_biometrico.Sensor_Biometrico"
     depends_on:
       broker-rabbitmq:
         condition: service_healthy
@@ -93,33 +73,25 @@ servicio-expedientes-2:
     networks:
       - red-distribuidos
 
-  # ----------------------------------------------------
-  # App Paciente (Cliente WebSocket Interactivo)
-  # ----------------------------------------------------
   app-paciente:
     build: ./App_Paciente
     container_name: app-paciente
     depends_on:
-      servicio-permisos:
-        condition: service_started
-    stdin_open: true
-    tty: true
+      - servicio-permisos
     networks:
       - red-distribuidos
 
-  # ----------------------------------------------------
-  # Sistema Hospital (Cliente HTTP de un solo disparo)
-  # ----------------------------------------------------
   sistema-hospital:
     build: ./Sistema_Hospital
     container_name: sistema-hospital
+    # Esperamos lo suficiente para que la huella se procese y el paciente apruebe (auto)
+    entrypoint: bash -c "sleep 30 && java -cp app.jar:lib/* com.sistema_hospital.Sistema_Hospital"
     depends_on:
-      servicio-expedientes:
-        condition: service_started
+      - servicio-expedientes
+      - app-paciente
     networks:
       - red-distribuidos
 
-# CRÍTICO: Este bloque debe estar al ras de la izquierda (sin espacios iniciales)
 networks:
   red-distribuidos:
     driver: bridge

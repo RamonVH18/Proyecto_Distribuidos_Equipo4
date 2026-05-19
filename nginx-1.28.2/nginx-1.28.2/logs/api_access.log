@@ -1,4 +1,0 @@
-127.0.0.1 - - [20/Mar/2026:22:05:46 -0700] "GET /productos/1 HTTP/1.1" 200 46 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"
-127.0.0.1 - - [20/Mar/2026:22:06:35 -0700] "POST /ordenes/1 HTTP/1.1" 200 32 "-" "PostmanRuntime/7.51.1"
-127.0.0.1 - - [20/Mar/2026:22:06:40 -0700] "POST /ordenes/0 HTTP/1.1" 200 32 "-" "PostmanRuntime/7.51.1"
-127.0.0.1 - - [20/Mar/2026:22:15:05 -0700] "POST /ordenes/0 HTTP/1.1" 200 45 "-" "PostmanRuntime/7.51.1"

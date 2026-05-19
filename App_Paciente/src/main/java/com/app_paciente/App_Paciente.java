@@ -1,17 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
 package com.app_paciente;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
-import java.util.Scanner;
 
-/**
- *
- * @author norma
- */
 public class App_Paciente {
 
     public static void main(String[] args) throws Exception {
@@ -26,37 +18,46 @@ public class App_Paciente {
 
             @Override
             public void onMessage(String message) {
-                // el mensaje viene como "SOLICITUD:87654321"
-                String cedula = message.replace("SOLICITUD:", "");
+                String msgLower = message.toLowerCase();
+                String cedula = message;
+                
+                if (msgLower.startsWith("solicitud:")) {
+                    cedula = message.substring("solicitud:".length());
+                }
 
+                System.out.println("\n========================================");
                 System.out.println("= Solicitud de acceso a tu Expediente =");
                 System.out.println("Médico con cédula: " + cedula);
                 System.out.println("========================================");
-                System.out.print("¿Aprobar acceso? (si/no): ");
-
-                Scanner scanner = new Scanner(System.in);
-                String respuesta = scanner.nextLine();
-                if (respuesta.equalsIgnoreCase("si")) {
-                    send("APROBADO");
-                    System.out.println("Acceso aprobado.");
-                } else {
-                    send("RECHAZADO");
-                    System.out.println("Acceso rechazado.");
-                }
+                
+                System.out.println("APROBANDO ACCESO AUTOMÁTICAMENTE...");
+                send("APROBADO");
+                System.out.println("Respuesta 'APROBADO' enviada.");
             }
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                System.out.println("Desconectado del servidor.");
+                System.out.println("Desconectado del servidor. Reintentando en 5s...");
             }
 
             @Override
             public void onError(Exception ex) {
-                System.err.println("Error: " + ex.getMessage());
+                System.err.println("Error de conexión: " + ex.getMessage());
             }
         };
 
-        client.connect();
+        while (true) {
+            try {
+                System.out.println("Intentando conectar a " + uri + "...");
+                if (client.connectBlocking()) {
+                    break;
+                }
+            } catch (InterruptedException e) {
+                break;
+            }
+            Thread.sleep(5000);
+        }
+        
         Thread.currentThread().join();
     }
 }
