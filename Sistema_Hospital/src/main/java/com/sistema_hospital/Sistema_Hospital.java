@@ -17,7 +17,7 @@ public class Sistema_Hospital {
 
     private static final String CEDULA = "87654321";
     private static final String DOCUMENTO = "EXP-002";
-    private static final String URL = "http://localhost:8081/expedientes/"
+    private static final String URL = "http://servicio-expedientes:8081/expedientes/"
             + DOCUMENTO + "/" + CEDULA;
 
     public static void main(String[] args) {

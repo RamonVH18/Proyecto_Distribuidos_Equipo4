@@ -15,7 +15,7 @@ import java.util.Scanner;
 public class App_Paciente {
 
     public static void main(String[] args) throws Exception {
-        URI uri = new URI("ws://localhost:8080");
+        URI uri = new URI("ws://servicio-permisos:8080");
 
         WebSocketClient client = new WebSocketClient(uri) {
             @Override

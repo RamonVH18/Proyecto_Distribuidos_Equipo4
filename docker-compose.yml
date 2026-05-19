@@ -6,13 +6,12 @@ services:
     image: rabbitmq:3-management
     container_name: broker-rabbitmq
     ports:
-      - "1883:1883"   # MQTT
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Web Admin
+      - "11883:1883"   # Evita colisión de MQTT local
+      - "5673:5672"    # Evita colisión de AMQP local
+      - "15672:15672"  # Panel de administración web
     command: bash -c "rabbitmq-plugins enable --offline rabbitmq_mqtt && rabbitmq-server"
     networks:
       - red-distribuidos
-    # Docker monitoreará internamente cuándo RabbitMQ responde con éxito
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_running"]
       interval: 5s
@@ -30,7 +29,7 @@ services:
       - "9091:9091"
     depends_on:
       broker-rabbitmq:
-        condition: service_healthy # Espera a que el broker esté LISTO, no solo iniciado
+        condition: service_healthy
     networks:
       - red-distribuidos
 
@@ -41,7 +40,8 @@ services:
     build: ./Servicio_Permisos
     container_name: servicio-permisos
     ports:
-      - "9090:9090"
+      - "9090:9090" # Puerto gRPC
+      - "8080:8080" # Servidor WebSocket
     depends_on:
       servicio-expedientes:
         condition: service_started
@@ -56,24 +56,55 @@ services:
     container_name: servicio-autenticacion
     depends_on:
       broker-rabbitmq:
-        condition: service_healthy # Espera a que el broker esté LISTO
+        condition: service_healthy
       servicio-permisos:
         condition: service_started
     networks:
       - red-distribuidos
 
   # ----------------------------------------------------
-  # 1. Sensor Biométrico (Emulador)
+  # 1. Sensor Biométrico (Emulador con Retraso Automático)
   # ----------------------------------------------------
   sensor-biometrico:
     build: ./Sensor_Biometrico
     container_name: sensor-biometrico
+    # AUTOMATIZACIÓN: Espera 10 segundos a que la Autenticación esté 100% lista en la red antes de mandar la huella
+    entrypoint: bash -c "sleep 10 && java -cp app.jar:lib/* com.sensor_biometrico.Sensor_Biometrico"
     depends_on:
       broker-rabbitmq:
-        condition: service_healthy # Espera a que el broker esté LISTO
+        condition: service_healthy
+      servicio-autenticacion:
+        condition: service_started
     networks:
       - red-distribuidos
 
+  # ----------------------------------------------------
+  # App Paciente (Cliente WebSocket Interactivo)
+  # ----------------------------------------------------
+  app-paciente:
+    build: ./App_Paciente
+    container_name: app-paciente
+    depends_on:
+      servicio-permisos:
+        condition: service_started
+    stdin_open: true
+    tty: true
+    networks:
+      - red-distribuidos
+
+  # ----------------------------------------------------
+  # Sistema Hospital (Cliente HTTP de un solo disparo)
+  # ----------------------------------------------------
+  sistema-hospital:
+    build: ./Sistema_Hospital
+    container_name: sistema-hospital
+    depends_on:
+      servicio-expedientes:
+        condition: service_started
+    networks:
+      - red-distribuidos
+
+# CRÍTICO: Este bloque debe estar al ras de la izquierda (sin espacios iniciales)
 networks:
   red-distribuidos:
     driver: bridge
